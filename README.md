@@ -1,5 +1,7 @@
 # Fanta Simulation
 
+*meglio non fare cazzate*
+
 ## To-do list
 
 - [x] Generare i campionati
