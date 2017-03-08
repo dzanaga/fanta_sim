@@ -3,7 +3,7 @@ import string
 import numpy as np
 import itertools
 import os, random
-
+#ciao
 def print_league(L,n=0):
     if n == 0:
         n = len(L)
