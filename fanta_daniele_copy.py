@@ -152,7 +152,7 @@ def classifica(dati):
 
     return classifica_ordinata
             
-            
+# ciao           
 def play_league(teams, goals, days, cal):
     letters = [i for i in string.ascii_lowercase[0:len(teams)]]
     alias = {}
