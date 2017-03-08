@@ -18,11 +18,11 @@ def print_league(L,n=0):
 def check_unique_team(L):
     #flatten L and convert to string
     L_string = [item for sublist in L for item in sublist]
-    if len(L_string) == len(''.join(set(L_string))):
+    if len(L_string) == len(set(L_string)):
         return True
     else:
         return False
-
+        
 def combinations_noteams(iterable, r):
     for matches in itertools.combinations(iterable, int(r)):
         #print(matches)
@@ -48,7 +48,7 @@ def create_teams_matches_days(n_teams):
     matches_iter = itertools.combinations(teams,2)
     matches = [i for i in matches_iter]
     
-    days_iter = combinations_noteams(matches_list, n_teams/2)
+    days_iter = combinations_noteams(matches, n_teams/2)
 
     days = [i for i in days_iter]
 
@@ -75,9 +75,11 @@ def create_league(glist):
     return L_all
 
 
-n_teams = 6
+n_teams = 4
 
 teams,matches,days = create_teams_matches_days(n_teams)
+
+start_time = time.time()
 
 leagues = create_league(days)
 
@@ -86,4 +88,4 @@ print("--- %s seconds ---" % (time.time() - start_time))
 print(len(matches))
 print(len(days))
 print(len(leagues))
-print_league(leagues,3) # print first 3 leagues
+print_league(leagues,1) # print first 3 leagues
