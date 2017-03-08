@@ -1,4 +1,4 @@
-# fanta_sim
+# Fanta Simulation
 
 ## To-do list
 
