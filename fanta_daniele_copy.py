@@ -162,24 +162,76 @@ def play_league(teams, goals, days, cal):
         dati[i] = (points[i], punti_totali[i], sum(goals[i]))
     
     return classifica(dati)
+    
+def play_league_SE(teams, goals, absolute_points, days, cal):
+    letters = [i for i in string.ascii_lowercase[0:len(teams)]]
+    alias = {}
+    for i in letters:
+        alias['{}'.format(i)] = teams[letters.index(i)]
+    
+    points = {i:0 for i in teams}
+              
+    dati = {}
+              
+    value = len(teams) // 2
+    
+    for i in range(len(cal)):
+        match = []
+        team1 = alias[cal[i][0]]
+        team2 = alias[cal[i][1]]
+        points1 = absolute_points[team1][i // value]
+        points2 = absolute_points[team2][i // value]
+        difference = abs(points1 - points2)
+        
+        if points1 > points2:
+            calcola_goals(punti)
+        
+            
+        match.append(goals[team1][i // value])
+        match.append(goals[team2][i // value])
+        
+        if match[0] > match[1]:
+            points[team1] += 3
+        elif match[0] < match[1]:
+            points[team2] += 3
+        else:
+            points[team1] += 1
+            points[team2] += 1
 
-def play_all_leagues(teams, goals, days, trials):
+    for i in points:
+        dati[i] = (points[i], punti_totali[i], sum(goals[i]))
+    
+    return classifica(dati)
+
+def play_all_leagues(teams, goals, days, trials, SE = 'No'):
     
     vittorie = {i:[0 for j in range(len(teams))] for i in teams}
-    counts = 0
-    for i in range(trials):
-        league = get_random_line('leagues_%s_teams_lines - Copy.txt' % len(teams))
-        if league != '':
-            girone = organize_round(league)
-            cal = gen_cal(days, girone)
-            temp = play_league(teams, goals, days, cal)
-            counts += 1
-            for i in range(len(temp)):
-                squadra = temp[i][0]
-                vittorie[squadra][i] += 1
+    
+    if SE == 'No':    
+        counts = 0
+        for i in range(trials):
+            league = get_random_line('leagues_%s_teams_lines - Copy.txt' % len(teams))
+            if league != '':
+                girone = organize_round(league)
+                cal = gen_cal(days, girone)
+                temp = play_league(teams, goals, days, cal)
+                counts += 1
+                for i in range(len(temp)):
+                    squadra = temp[i][0]
+                    vittorie[squadra][i] += 1
         else:
             break
     
+    else:
+        counts = 0
+        for i in range(trials):
+            league = get_random_line('leagues_%s_teams_lines - Copy.txt' % len(teams))
+            if league != '':
+                girone = organize_round(league)
+                cal = gen_cal(days, girone)
+        
+        
+        
     L = []
     for i in vittorie:
        L.append((round(vittorie[i][0] * 100 / counts, 2)))
