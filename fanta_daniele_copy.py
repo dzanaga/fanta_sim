@@ -3,7 +3,10 @@ import string
 import numpy as np
 import itertools
 import os, random
-#ciao
+import pandas as pd
+import matplotlib.pylab as plt
+
+
 def print_league(L,n=0):
     if n == 0:
         n = len(L)
@@ -76,30 +79,6 @@ def create_league(glist):
     create_league_subf(L,glist, txt)
 #    return txt2
 
-#==============================================================================
-# os.remove('leagues_4_teams_lines.txt')
-# 
-# n_teams = 4
-# 
-# teams,matches,days = create_teams_matches_days(n_teams)
-# 
-# start_time = time.time()
-# txt = open('leagues_4_teams_lines.txt', 'a+')
-# leagues = create_league(days)
-# txt.close()
-# 
-# 
-# print("--- %s seconds ---" % (time.time() - start_time))
-# print(len(matches))
-# print(len(days))
-#==============================================================================
-#print(len(leagues))
-#print_league(leagues,1) # print first 3 leagues
-
-#teams = ['A', 'B', 'C', 'D']
-
-
-
 def organize_round(line):
     days = []
     girone = []
@@ -152,7 +131,6 @@ def classifica(dati):
 
     return classifica_ordinata
             
-# ciao           
 def play_league(teams, goals, days, cal):
     letters = [i for i in string.ascii_lowercase[0:len(teams)]]
     alias = {}
@@ -182,54 +160,10 @@ def play_league(teams, goals, days, cal):
 
     for i in points:
         dati[i] = (points[i], punti_totali[i], sum(goals[i]))
-
-#==============================================================================
-#     for i in classifica(dati):
-#         print(i)
-#         
-#     print('\n')
-#     print(alias)
-#==============================================================================
     
     return classifica(dati)
 
-import pandas as pd
-
-def play_all_leagues(teams, goals, days):
-    
-    vittorie = {i:[0 for j in range(len(teams))] for i in teams}
-    all_leagues = open('leagues_%s_teams_lines.txt' % len(teams), 'r')
-    counts = 0
-    while True:
-        league = all_leagues.readline()
-        if league != '':
-            girone = organize_round(league)
-            cal = gen_cal(days, girone)
-            temp = play_league(teams, goals, days, cal)
-            counts += 1
-            for i in range(len(temp)):
-                squadra = temp[i][0]
-                vittorie[squadra][i] += 1
-        else:
-            break
-        
-    all_leagues.close()
-        
-    print(vittorie)
-    print('\n')
-    print(counts)
-#==============================================================================
-#     for i in vittorie:
-#        print(str(i) + ' primo: ' + str(round(vittorie[i][5] * 100 / counts, 2)) + ' %')
-#==============================================================================
-    
-#==============================================================================
-#     tabella = pd.DataFrame(vittorie)
-#     tabella.loc[:] = round(tabella.loc[:]/counts*100,2)
-#     print(tabella.head(6))
-#==============================================================================
-import matplotlib.pylab as plt
-def play_all_leagues2(teams, goals, days, trials):
+def play_all_leagues(teams, goals, days, trials):
     
     vittorie = {i:[0 for j in range(len(teams))] for i in teams}
     counts = 0
@@ -245,23 +179,16 @@ def play_all_leagues2(teams, goals, days, trials):
                 vittorie[squadra][i] += 1
         else:
             break
-       
-    tabella = pd.DataFrame(vittorie)
-    tabella.loc[:] = round(tabella.loc[:]/counts*100,2)
-    tabella.index = np.arange(1,len(tabella)+1)
-    print(tabella.head(8))
     
-#     print(vittorie)
-#     print('\n')
-#     print(counts)
-#==============================================================================
     L = []
     for i in vittorie:
        L.append((round(vittorie[i][0] * 100 / counts, 2)))
        
-    plt.plot(L,'mo')
+    plt.plot(L,'rs')
     plt.axis([-1,8,-3,100])    
     plt.show()
+    
+    return vittorie, counts
     
 def get_random_line(file_name):
     total_bytes = os.stat(file_name).st_size 
@@ -272,22 +199,26 @@ def get_random_line(file_name):
     temp = file.readline()
     file.close()
     return temp
-#==============================================================================
-# file = open('leagues_6_teams_lines.txt')
-# line = file.readline()
-# file.close()
-# 
-# girone = organize_round(line)
-# 
-# days = 26
-# 
-# cal = gen_cal(days, girone)
-#==============================================================================
+   
+   
+#%% Create text file
+    
+n_teams = 4
+
+teams,matches,days = create_teams_matches_days(n_teams)
+
+start_time = time.time()
+txt = open('leagues_4_teams_lines.txt', 'a+')
+leagues = create_league(days)
+txt.close()
+
+
+print("--- %s seconds ---" % (time.time() - start_time))
+
+#%% Run simulation
 
 teams = ['Ciolle United', 'FC Pastaboy', 'Bucalina FC', 'LA CORRAZZATA POTEMKIN',\
          'Fc Stress', 'FC Roxy', 'FC BOMBAGALLO', 'AC PICCHIA']
-         
-#teams = ['Ciolle United', 'FC Pastaboy', 'Bucalina FC', 'LA CORRAZZATA POTEMKIN', 'Fc Stress', 'FC Roxy']
          
 
 goals = {'Ciolle United':          [3,1,1,2,1,1,2,0,2,2,4,3,0,1,3,1,3,1,0,2,1,2,2,1,1,2,], \
@@ -300,15 +231,17 @@ goals = {'Ciolle United':          [3,1,1,2,1,1,2,0,2,2,4,3,0,1,3,1,3,1,0,2,1,2,
          'AC PICCHIA':             [2,1,0,2,0,0,2,2,3,1,3,3,4,0,1,1,2,0,1,1,1,1,2,1,0,1,]}
          
 
-
 punti_totali = {'Ciolle United': 1888, 'FC Pastaboy': 1953.5, 'Bucalina FC': 1871.5, \
                'LA CORRAZZATA POTEMKIN': 1873.5, 'Fc Stress': 1851.5, 'FC Roxy': 1886,\
                'FC BOMBAGALLO': 1812, 'AC PICCHIA': 1838.5}
 
-#a = play_league(teams, goals, days, cal)
 
 start = time.time()
-play_all_leagues2(teams, goals, 26, 1000)
+results, counts = play_all_leagues(teams, goals, 26, 1000)
+tabella = pd.DataFrame(results)
+tabella.loc[:] = round(tabella.loc[:]/counts*100,2)
+tabella.index = np.arange(1,len(tabella)+1)
+print(tabella.head(8))
 print('\n')
 print(time.time() - start)
 
