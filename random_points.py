@@ -6,7 +6,6 @@ import requests
 import numpy as np
 from IPython.core.display import display, HTML
 
-
 url = 'http://leghe.fantagazzetta.com/fantascandalo/tutte-le-rose'
 # url = 'http://leghe.fantagazzetta.com/fantascandalo/calendario'
 source = requests.get(url)
