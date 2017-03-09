@@ -78,6 +78,46 @@ def get_random_line(file_name):
     temp = file.readline()
     file.close()
     return temp
+    
+def gen_cal(days, girone):
+    ''' Dal girone creo il calendario con tutte le partite del campionato. La variable
+        days rappresenta il numero di giornate. La variabile girone è una lista ed è 
+        l'output di all_tourn. L'output è una lista di tuples ed ogni tuples rappresenta
+        una partita del torneo, già in ordine secondo il calendario.'''
+    
+
+    if days % len(girone) == 0:
+        return list(itertools.chain(*(girone * (days // len(girone)))))
+    
+    else:
+        if days == 1:
+            return girone[0]
+            
+        elif days > len(girone):
+            temp = list(girone * (days // len(girone)))
+            resto = days % len(girone)
+            temp.append(list(itertools.chain(*(girone[0 : resto]))))
+            temp = list(itertools.chain(*temp))
+            return temp
+            
+        else:
+            temp = [i for i in girone[0:days]]
+            temp = list(itertools.chain(*temp))
+            return temp
+            
+def organize_round(line):
+    days = []
+    girone = []
+    list_line = [i for i in line[:-1]]
+    while len(girone) < len(teams) - 1:
+        while len(days) < len(teams) // 2:
+            a = list_line[0]
+            b = list_line[1]
+            days.append((a, b))
+            del list_line[:2]
+        girone.append(days)
+        days = []
+    return girone
         
         
 #==============================================================================
@@ -96,14 +136,17 @@ def get_random_line(file_name):
 #==============================================================================
 
 
-names = ['Ciolle United', 'FC Pastaboy', 'Bucalina FC', 'LA CORRAZZATA POTEMKIN',\
+teams = ['Ciolle United', 'FC Pastaboy', 'Bucalina FC', 'LA CORRAZZATA POTEMKIN',\
          'Fc Stress', 'FC Roxy', 'FC BOMBAGALLO', 'AC PICCHIA']
          
-teams = assign_teams(names)
+assignments = assign_teams(teams)
 
-league = get_random_line('leagues_%s_teams_lines.txt' % len(names))
+league = get_random_line('leagues_{}_teams_lines.txt'.format(len(teams)))
 
-print(league)
+rounds = organize_round(league)
+
+print(gen_cal(8, rounds)[0:4])
+
 
 
 
