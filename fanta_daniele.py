@@ -75,17 +75,17 @@ def create_league(glist):
     return L_all
 
 
-n_teams = 4
+n_teams = 8
 
 teams,matches,days = create_teams_matches_days(n_teams)
 
 start_time = time.time()
 
-leagues = create_league(days)
+#leagues = create_league(days)
 
 
 print("--- %s seconds ---" % (time.time() - start_time))
 print(len(matches))
 print(len(days))
-print(len(leagues))
-print_league(leagues,1) # print first 3 leagues
+#print(len(leagues))
+#print_league(leagues,1) # print first 3 leagues
