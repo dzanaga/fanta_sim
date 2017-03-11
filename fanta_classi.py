@@ -145,7 +145,7 @@ league = get_random_line('leagues_{}_teams_lines.txt'.format(len(teams)))
 
 rounds = organize_round(league)
 
-print(gen_cal(8, rounds)[0:4])
+cal = gen_cal(8, rounds)
 
 
 
