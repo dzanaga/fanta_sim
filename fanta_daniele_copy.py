@@ -45,9 +45,7 @@ def get_compatible_lists(giornata,giornate_list):
 
 def flatten_list(L): return [item for sublist in L for item in sublist]
 
-def create_teams_matches_days(n_teams):
-
-    teams = [i for i in string.ascii_lowercase[0:n_teams]]
+def create_teams_matches_days(teams):
 
     matches_iter = itertools.combinations(teams,2)
     matches = [i for i in matches_iter]
@@ -56,28 +54,32 @@ def create_teams_matches_days(n_teams):
 
     days = [i for i in days_iter]
 
-    return teams,matches,days
+    return matches,days
 
-def create_league(glist):
+def create_league(teams, num_leagues):
     
     L = []
     L_all = []
     
     def create_league_subf(L,glist, txt):
-
-        for i in glist:
-            L1 = L.copy()
-            L1.append(i)
-            
-            if len(L1) == n_teams - 1:
-                txt.write('%s\n' % ''.join(flatten_list(flatten_list(flatten_list(L1)))))
+        while len(L_all) == 0:
+            for i in days:
+                L1 = L.copy()
+                L1.append(i)
                 
-            else:
-                s1 = get_compatible_lists(i,glist)
-                create_league_subf(L1,s1, txt)
+                if len(L1) == len(teams) - 1:
+                    L_all.append(L1)
+                    
+                else:
+                    s1 = get_compatible_lists(i,days)
+                    create_league_subf(L1,s1)
             
-    create_league_subf(L,glist, txt)
-#    return txt2
+    for i in range(num_leagues):
+        random.shuffle(teams)
+        matches,days = create_teams_matches_days(teams)
+        create_league_subf(L,days)
+    
+    return L_all
 
 def organize_round(line):
     days = []
