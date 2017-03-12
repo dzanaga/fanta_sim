@@ -5,6 +5,13 @@ import re
 import requests
 import numpy as np
 
+def string_from_tab(a):
+    L = []
+    for i in a.descendants:
+        if type(i) is bs4.NavigableString:
+            L.append(i)
+    return L
+
 def scrape_names_points(league_name = 'fantascandalo'):
     
     domain = 'http://leghe.fantagazzetta.com/'
