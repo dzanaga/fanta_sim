@@ -22,19 +22,19 @@ class Team(object):
         Team.num_teams += 1
         Team.name_teams.append(self.name)
         
-    def get_name():
+    def get_name(self):
         return self.name
         
-    def get_players_list(name):
-        return self.players[self.name]
+    def get_players_list(self):
+        return self.players
         
-    def get_abs_points():
+    def get_abs_points(self):
         return self.abs_points
         
-    def get_position():
+    def get_position(self):
         return self.position
         
-    def get_goals():
+    def get_goals(self):
         return self.goals
         
     def get_num_of_teams():
@@ -241,8 +241,9 @@ def scraping(league_name):
 
 teams, players, abs_points = scraping('fantascandalo')
 
+new_dict = {}
 for i in teams:
-    Team(i)
+    new_dict[i] = Team(i)
 
 
 
