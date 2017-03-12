@@ -11,7 +11,7 @@ def print_league(L,n=0):
         if c == n:
             break
         c += 1
-        print('\nCampionato {}:'.format(c))
+        print('\nLeague {}:'.format(c))
         for j in i:
             print(j)
             
@@ -82,7 +82,6 @@ teams,matches,days = create_teams_matches_days(n_teams)
 start_time = time.time()
 
 #leagues = create_league(days)
-
 
 print("--- %s seconds ---" % (time.time() - start_time))
 print(len(matches))
