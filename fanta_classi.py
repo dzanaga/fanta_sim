@@ -49,17 +49,45 @@ class Match(object):
         self.team2 = team2.name
         self.day = day
         
-    def get_result(team1, team2, day):
-        temp1 = int(((abs_points[team1.name][day - 1] - 66) // 6) + 1)
-        temp2 = int(((abs_points[team2.name][day - 1] - 66) // 6) + 1)
-        team1.goals += temp1
-        team2.goals += temp2
-        if temp1 < 0:
-            temp1 = 0
-        if temp2 < 0:
-            temp2 = 0
+    def get_result(team1, team2, day, SE = 'No'):
         
-#        print('%s - %s     %s - %s' % (team1.name, team2.name, temp1, temp2))
+        points1 = abs_points[team1.name]
+        points2 = abs_points[team2.name]
+        sum1 = sum(abs_points[team1.name][0:day])
+        sum2 = sum(abs_points[team2.name][0:day])
+
+        if SE == 'No' or day < len(teams) or sum1 == sum2:
+            temp1 = int(((points1[day - 1] - 66) // 6) + 1)
+            temp2 = int(((points2[day - 1] - 66) // 6) + 1)
+            team1.goals += temp1
+            team2.goals += temp2
+            if temp1 < 0:
+                temp1 = 0
+            if temp2 < 0:
+                temp2 = 0
+        
+        if SE == 'Sì' and sum1 > sum2:
+            factor = (sum1 - sum2) // day
+            temp1 = int(((points1[day - 1] - 66) // 6) + 1)
+            temp2 = int(((points2[day - 1] - (66 + factor)) // 6) + 1)
+            team1.goals += temp1
+            team2.goals += temp2
+            if temp1 < 0:
+                temp1 = 0
+            if temp2 < 0:
+                temp2 = 0
+                
+        if SE == 'Sì' and sum1 < sum2:
+            factor = (sum2 - sum1) // day
+            temp1 = int(((points1[day - 1] - (66 + factor)) // 6) + 1)
+            temp2 = int(((points2[day - 1] - 66) // 6) + 1)
+            team1.goals += temp1
+            team2.goals += temp2
+            if temp1 < 0:
+                temp1 = 0
+            if temp2 < 0:
+                temp2 = 0
+        
         return (team1.name, team2.name, temp1, temp2)
         
 #==============================================================================
@@ -235,15 +263,34 @@ def scraping(league_name):
             abs_points[res[1]].append(res[3])
             
     return teams, players, abs_points
+    
+def play_league(team1, team2, day, SE):
+    
+    temp = Match(team1, team2, day)
+    temp2 = Match.get_result(team1, team2, day, SE)
+    
+    if temp2[2] > temp2[3]:
+        points[temp2[0]] += 3
+    elif temp2[2] < temp2[3]:
+        points[temp2[1]] += 3
+    else:
+        points[temp2[0]] += 1
+        points[temp2[1]] += 1
+    
+    return points
 
 #%%
 
 
 teams, players, abs_points = scraping('fantascandalo')
+points = {i:0 for i in teams}
 
-new_dict = {}
-for i in teams:
-    new_dict[i] = Team(i)
+galli = Team('FC BOMBAGALLO')
+pasta = Team('FC Pastaboy')
+
+for i in range(26):
+    play_league(pasta, galli, i, SE = 'Sì')
+print(points)
 
 
 
