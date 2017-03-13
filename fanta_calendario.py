@@ -83,7 +83,6 @@ def create_league(teams):
 def create_league_random(teams,n_leagues):
     
     n_teams = len(teams)
-    L = []
     L_all = []
     matches, days = create_matches_days(teams)
 
@@ -101,6 +100,8 @@ def create_league_random(teams,n_leagues):
 
         if len(L0) == n_teams - 1:
             L_all.append(L0)
+            
+    return L_all
 
 def gen_cal(days, girone):
     ''' Dal girone creo il calendario con tutte le partite del campionato. La variable
