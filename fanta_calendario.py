@@ -110,9 +110,9 @@ def gen_cal(days, girone):
         una partita del torneo, già in ordine secondo il calendario.'''
     
 
-    if days % len(girone)[0] == 0:
+    if days % len(girone) == 0:
 #        return list(itertools.chain(*(girone * (days // len(girone)))))
-        return girone * (days // len(girone[0]))
+        return girone * (days // len(girone))
     
     else:
         if days == 1:
@@ -121,13 +121,13 @@ def gen_cal(days, girone):
         elif days > len(girone):
             temp = list(girone * (days // len(girone)))
             resto = days % len(girone)
-            temp.append(list(itertools.chain(*(girone[0 : resto]))))
-            temp = list(itertools.chain(*temp))
+            temp.append(girone[0 : resto])
+#            temp = list(itertools.chain(*temp))
             return temp
             
         else:
             temp = [i for i in girone[0:days]]
-            temp = list(itertools.chain(*temp))
+#            temp = list(itertools.chain(*temp))
             return temp
 
 def get_abs_points(_list_):
