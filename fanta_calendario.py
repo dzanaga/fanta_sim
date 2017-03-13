@@ -116,12 +116,13 @@ def gen_cal(days, girone):
     
     else:
         if days == 1:
-            return girone[0]
+            return [girone[0]]
             
         elif days > len(girone):
-            temp = list(girone * (days // len(girone)))
+            temp = girone * (days // len(girone))
             resto = days % len(girone)
-            temp.append(girone[0 : resto])
+            for i in range(resto):
+                temp.append(girone[i])
 #            temp = list(itertools.chain(*temp))
             return temp
             
@@ -139,6 +140,18 @@ def get_abs_points(_list_):
            float(temp2[4].string.replace(',', '.')))
     
     return res
+    
+def classifica(dati):
+    '''dati è un dict (disordinato) nel quale ad ogni squadra è associato un tuple di 3 elementi.
+       Questi 3 elementi rappresentano nell'ordine: punti, punti totali, gol segnati.
+       L'output è unua lista di tuples (ordinata) che rappresenta la classifica finale.'''
+       
+    classifica_ordinata = sorted(sorted(sorted(dati.items(), key = lambda x : \
+                            x[1][2], reverse = True), key = lambda x : x[1][1], \
+                            reverse = True), key = lambda x : x[1][0], reverse = True)
+
+
+    return classifica_ordinata
 #%% Scraping teams' names, players and absolute points
 
 def scraping(league_name):

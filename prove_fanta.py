@@ -1,5 +1,5 @@
 import sys
-sys.path.append('C:/Users/ALaPorta/Desktop/fanta_sim_dz')
+sys.path.append('C:/Users/Andrea/Desktop/fanta_sim_dz')
 import time
 import string
 import numpy as np
@@ -10,7 +10,6 @@ import matplotlib.pylab as plt
 import requests
 from bs4 import BeautifulSoup as bs
 from fanta_calendario import *
-
 
 class Team(object):
     num_teams = 0
@@ -111,7 +110,8 @@ def get_abs_points(_list_):
            float(temp2[4].string.replace(',', '.')))
     
     return res
-#%% Scraping teams' names, players and absolute points
+
+#Scraping teams' names, players and absolute points
 
 def scraping(league_name):
     
@@ -167,23 +167,39 @@ def play_match(team1, team2, day, points, weight, SE):
     
     return points
     
-def play_league(cal, weight, SE):
+def play_league(cal, days, weight, SE):
+    
+    dati = {}
     points = {i:0 for i in teams}
+
     for i in cal:
         for j in i:
             play_match(j[0], j[1], (cal.index(i) + 1), points, weight, SE)
+            
+    for i in points:
+        dati[i] = (points[i], (dict_teams[i].get_abs_points())[0:days])
 
-    return points
-
+    return classifica(dati)
+    
+#==============================================================================
+# def play_all_leagues(n_leagues, days, weight, SE):
+#     
+#     wins = {i: 0 for i in teams}
+#     rounds = create_league_random(teams,n_leagues)
+#     
+#     for i in rounds:
+#         cal = gen_cal(days, i)
+#         league = play_league(cal, weight, SE)
+#         wins[]
+# 
+#==============================================================================
 #%%
 
 teams, players, abs_points = scraping('fantascandalo')
 
 #%%
 
-for i in teams:
-        exec(('team{} = Team("' + i + '")').format(teams.index(i) + 1))
-#        print(('team{} = Team("' + i + '")').format(teams.index(i) + 1))
+dict_teams = {i: Team(i) for i in teams}
 
 #%%
 
@@ -192,10 +208,9 @@ rounds = create_league_random(teams,1)
 
 #%%
 
-cal = gen_cal(1, rounds[0])
+cal = gen_cal(26, rounds[0])
 
-#print(play_league(cal, 1, SE = 'No'))
-
+print(play_league(cal, 26, 1, SE = 'No'))
 
 
 
