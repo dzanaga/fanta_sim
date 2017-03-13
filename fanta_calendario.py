@@ -110,8 +110,9 @@ def gen_cal(days, girone):
         una partita del torneo, già in ordine secondo il calendario.'''
     
 
-    if days % len(girone) == 0:
-        return list(itertools.chain(*(girone * (days // len(girone)))))
+    if days % len(girone)[0] == 0:
+#        return list(itertools.chain(*(girone * (days // len(girone)))))
+        return girone * (days // len(girone[0]))
     
     else:
         if days == 1:
