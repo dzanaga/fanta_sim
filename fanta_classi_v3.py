@@ -218,6 +218,8 @@ class Stats(object):
         self.average_points = []
         self.positions = {}
         self.SE = SE
+        self.teams_names = list_leagues[0].teams_names
+        self.teams = list_leagues[0].teams
         
     def avrg_points(self):
         
@@ -240,18 +242,41 @@ class Stats(object):
             self.average_points.append(i)
             
         return self.average_points
+        
+    def get_positions(self):
+        
+        def classifica(dati):
+           
+            classifica_ordinata = sorted(sorted(sorted(dati.items(), key = lambda\
+                                    x : x[1][2], reverse = True), key = lambda\
+                                    x : x[1][1], reverse = True), key = lambda\
+                                    x : x[1][0], reverse = True)
+                                    
+            return classifica_ordinata
+        
+        positions = {i: [0 for i in range(len(self.teams_names))] for i in self.teams_names}
+        
+        for i in self.list_leagues:
+            data = {}
+            i.play(self.SE)
+            d = i.get_teams_points()
+            for j in d:
+                data[j] = (j, d[j], sum(self.teams[j].get_abs_points()))
+#                data = classifica(data)
+                
+        return data
 
 #%% Statistics from leagues
 
 teams_names, players, abs_points = scraping('fantascandalo')
 
 n_days = len(abs_points[teams_names[0]])
-random_leagues = create_league_random(teams_names,1000)
+random_leagues = create_league_random(teams_names,1)
 
 list_leagues = [League(random_leagues[i],teams_names, n_days) for i in\
                 range(len(random_leagues))]
-
-stats1 = Stats(list_leagues, 0)
+#%%
+#stats1 = Stats(list_leagues, 0)
 stats2 = Stats(list_leagues, 2)
 
 #%%
@@ -280,12 +305,6 @@ def print_stats(L):
     
 #%%
     
-def positions(list_leagues, teams_names, SE):
-    positions = {i: [0 for i in range(len(teams_names))] for i in teams_names}
 
-    for i in list_leagues:
-        i.play(SE)
-        d = i.get_teams_points()
-        print(d)
         
     
