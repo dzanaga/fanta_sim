@@ -153,6 +153,18 @@ def scraping(league_name):
             
     return teams, players, abs_points
     
+def classifica(dati):
+    '''dati è un dict (disordinato) nel quale ad ogni squadra è associato un tuple di 3 elementi.
+       Questi 3 elementi rappresentano nell'ordine: punti, punti totali, gol segnati.
+       L'output è unua lista di tuples (ordinata) che rappresenta la classifica finale.'''
+       
+    classifica_ordinata = sorted(sorted(dati.items(), key = lambda x : \
+                            x[1][1], reverse = True), key = lambda x : x[1][0], \
+                            reverse = True)
+
+
+    return classifica_ordinata
+    
 def play_match(team1, team2, day, points, weight, SE):
     
     temp = Match.get_result(team1, team2, day, weight, SE)
@@ -174,25 +186,27 @@ def play_league(cal, days, weight, SE):
 
     for i in cal:
         for j in i:
-            play_match(j[0], j[1], (cal.index(i) + 1), points, weight, SE)
+            play_match(dict_teams[j[0]].get_name(), dict_teams[j[1]].get_name(),\
+                       (cal.index(i) + 1), points, weight, SE)
             
     for i in points:
-        dati[i] = (points[i], (dict_teams[i].get_abs_points())[0:days])
+        dati[i] = (points[i], sum((dict_teams[i].get_abs_points())[0:days]))
 
     return classifica(dati)
     
-#==============================================================================
-# def play_all_leagues(n_leagues, days, weight, SE):
-#     
-#     wins = {i: 0 for i in teams}
-#     rounds = create_league_random(teams,n_leagues)
-#     
-#     for i in rounds:
-#         cal = gen_cal(days, i)
-#         league = play_league(cal, weight, SE)
-#         wins[]
-# 
-#==============================================================================
+def play_all_leagues(n_leagues, days, weight, SE):
+    
+    wins = {i: 0 for i in teams}
+    rounds = create_league_random(teams,n_leagues)
+    
+    for i in rounds:
+        cal = gen_cal(days, i)
+        league = play_league(cal, days, weight, SE)
+        wins[league[0][0]] += 1
+
+#    return sorted(wins.items(), key = lambda x: x[1][0], reverse = True)
+    return wins
+
 #%%
 
 teams, players, abs_points = scraping('fantascandalo')
@@ -204,15 +218,15 @@ dict_teams = {i: Team(i) for i in teams}
 #%%
 
 
-rounds = create_league_random(teams,1)
+#rounds = create_league_random(teams,1)
 
 #%%
 
-cal = gen_cal(26, rounds[0])
+cal = gen_cal(2, rounds[0])
 
-print(play_league(cal, 26, 1, SE = 'No'))
+#print(play_league(cal, 26, 1, SE = 'No'))
 
-
+#print(play_all_leagues(5000, 26, 0, SE = 'No'))
 
 
 
