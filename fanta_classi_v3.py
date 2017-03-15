@@ -277,9 +277,28 @@ list_leagues = [League(random_leagues[i],teams_names, n_days) for i in\
                 range(len(random_leagues))]
 #%%
 #stats1 = Stats(list_leagues, 0)
-stats2 = Stats(list_leagues, 2)
+#stats2 = Stats(list_leagues, 2)
 
 #%%
+
+
+def avrg_points(list_leagues, teams_names, SE):
+    from collections import Counter
+
+    L = Counter({i:0 for i in teams_names})
+    
+    for i in list_leagues:
+        i.play(SE)
+        d = i.get_teams_points()
+        #print(d)
+        d = Counter(d)
+        L += d
+    
+    L2 = {k: round(L[k]/len(list_leagues),2) for k in L.keys()}
+    
+    L3 = sorted([(i,L2[i]) for i in L2],key = lambda j: j[1], reverse = True)
+        
+    return L3
 
 def print_stats(L):
     people = list(zip(*L))[0]
@@ -291,20 +310,14 @@ def print_stats(L):
     
     plt.plot(x_pos, trendline, color='red', linestyle='--')    
     plt.bar(x_pos, score, align = 'center')
-    plt.xticks(x_pos, people, fontsize = 7)
+    plt.xticks(x_pos, people, fontsize = 8)
     plt.ylabel('Media punti')
     plt.gcf().autofmt_xdate()
     plt.show()
     
-#==============================================================================
-# L = average_points(list_leagues,teams_names, 0)
-# 
-# for i in L:
-#     print(i)
-#==============================================================================
-    
-#%%
-    
-
-        
+L = avrg_points(list_leagues, teams_names, 2)
+print_stats(L)
+print('\n')
+for i in L:
+    print(i)        
     
