@@ -26,39 +26,6 @@ class Team(object):
         Team.num_teams += 1
         Team.teams_names.append(self.name)
         
-    def get_name(self):
-        return self.name
-        
-    def get_players_list(self):
-        return self.players
-        
-    def get_abs_points(self):
-        return self.abs_points
-        
-    def get_goals_scored(self):
-        return self.goals_scored
-    
-    def set_goals_scored(self, goals):
-        self.goals_scored += goals
-
-    def get_goals_taken(self):
-        return self.goals_taken
-    
-    def set_goals_taken(self, goals):
-        self.goals_taken += goals
-    
-    def get_num_of_teams():
-        return Team.num_teams
-        
-    def get_all_teams():
-        return Team.name_teams
-    
-    def get_league_points(self):
-        return self.league_points
-    
-    def set_league_points(self,points):
-        self.league_points += points
-        
     def get_goals_per_day(self, day):
         return self.goals_per_day[day]
 
@@ -79,7 +46,7 @@ class Team(object):
                 
     def victory(self,day):
         self.vic_draw_losses[day] = 'V'
-        self.set_league_points(3)
+        self.league_points += 3
         #self.points_update(day)
         
     def loss(self,day):
@@ -88,7 +55,7 @@ class Team(object):
         
     def draw(self,day):
         self.vic_draw_losses[day] = 'D'
-        self.set_league_points(1)
+        self.league_points += 1
         #self.points_update(day)
         
         
@@ -124,11 +91,11 @@ class Match(object):
         if temp2 < 0:
             temp2 = 0
         
-        self.team1.set_goals_scored(temp1)
-        self.team1.set_goals_taken(temp2)
+        self.team1.goals_scored += temp1
+        self.team1.goals_taken += temp2
         
-        self.team2.set_goals_scored(temp2)
-        self.team2.set_goals_taken(temp1)
+        self.team2.goals_scored += temp2
+        self.team2.goals_taken += temp1
         
         self.team1.set_goals_per_day(temp1, self.day)
         self.team2.set_goals_per_day(temp2, self.day)
@@ -182,9 +149,9 @@ class League(object):
             
         self.play()   
         
-        self.rank_data = {i:[self.teams[i].get_league_points(),\
-                             sum(self.teams[i].get_abs_points()),\
-                             self.teams[i].get_goals_scored()] for i in\
+        self.rank_data = {i:[self.teams[i].league_points,\
+                             sum(self.teams[i].abs_points),\
+                             self.teams[i].goals_scored] for i in\
                              teams_names}
         
         self.final_rank = self.order_ranking()
@@ -193,9 +160,6 @@ class League(object):
         
         for i in self.days:
             i.play_day(self.SE)
-            
-    def get_teams(self):
-        return self.teams_obj
     
     def get_teams_points(self):
         L = {}
@@ -253,9 +217,6 @@ class Stats(object):
                            
                 t_name = i.final_rank[pos][0]          
                 self.teams_frankings[t_name][pos] += 1
-    
-    def get_frankings_team(self,t_name):
-        return self.teams_frankings[t_name]
 
     def plot_frankings(self):
         for i in range(len(teams_names)):
@@ -305,12 +266,29 @@ teams_names, players, abs_points = scraping('fantascandalo')
 n_days = len(abs_points[teams_names[0]])
 random_leagues = create_league_random(teams_names,1000)
 
-SE_vals = []
+SE_vals = [i for i in range(20)]
 
 L = [[League(random_leagues[i],teams_names, n_days, SE) for i in
                 range(len(random_leagues))] for SE in SE_vals]
 #%%
-stats1 = Stats(list_leagues)
+#stats1 = Stats(list_leagues)
 #stats2 = Stats(list_leagues, 2)
                 
 #list_leagues[0].play(0)
+                
+#%%
+                
+lista_punti = {i: [] for i in teams_names}
+stats = [Stats(i) for i in L]
+for i in stats:    
+    punti_medi = i.avrg_points()
+    for z in punti_medi:
+        lista_punti[z[0]].append(z[1])
+        
+a = []
+b = []
+
+for i in lista_punti:
+    a.append(plt.plot(SE_vals, lista_punti[i]))
+    b.append(i)    
+plt.legend(a, b)
