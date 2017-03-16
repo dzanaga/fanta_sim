@@ -17,7 +17,6 @@ class Team(object):
         self.name = name
         self.players = players[self.name]
         self.abs_points = abs_points[self.name]
-        self.positions = {self.name: [0 for i in range(len(teams_names))]}
         self.league_points = 0
         self.goals_scored = 0
         self.goals_taken = 0
@@ -38,15 +37,12 @@ class Team(object):
         
     def get_goals_scored(self):
         return self.goals_scored
-        
-    def get_fin_pos(self):
-        return self.positions[self.name]
     
     def set_goals_scored(self, goals):
         self.goals_scored += goals
 
     def get_goals_taken(self):
-        return self.goals_scored
+        return self.goals_taken
     
     def set_goals_taken(self, goals):
         self.goals_taken += goals
@@ -63,8 +59,8 @@ class Team(object):
     def set_league_points(self,points):
         self.league_points += points
         
-    def get_goals_per_day(self):
-        return self.goals_per_day
+    def get_goals_per_day(self, day):
+        return self.goals_per_day[day]
 
     def set_goals_per_day(self, goals, day):
         self.goals_per_day[day] = goals
@@ -83,15 +79,17 @@ class Team(object):
                 
     def victory(self,day):
         self.vic_draw_losses[day] = 'V'
-        self.points_update(day)
+        self.set_league_points(3)
+        #self.points_update(day)
         
     def loss(self,day):
         self.vic_draw_losses[day] = 'L'
-        self.points_update(day)
+        #self.points_update(day)
         
     def draw(self,day):
         self.vic_draw_losses[day] = 'D'
-        self.points_update(day)
+        self.set_league_points(1)
+        #self.points_update(day)
         
         
 class Match(object):
@@ -101,14 +99,11 @@ class Match(object):
         self.team2 = team2
         self.day = day
         
-    def play_match(self, SE):
+    def play_match(self, SE=0):
         
         points1 = self.team1.abs_points
         points2 = self.team2.abs_points
-#==============================================================================
-#         sum1 = sum(points1[0:self.day])
-#         sum2 = sum(points2[0:self.day])
-#==============================================================================
+
         sum1 = sum(points1[-5:])
         sum2 = sum(points2[-5:])
         
@@ -130,7 +125,11 @@ class Match(object):
             temp2 = 0
         
         self.team1.set_goals_scored(temp1)
+        self.team1.set_goals_taken(temp2)
+        
         self.team2.set_goals_scored(temp2)
+        self.team2.set_goals_taken(temp1)
+        
         self.team1.set_goals_per_day(temp1, self.day)
         self.team2.set_goals_per_day(temp2, self.day)
         
@@ -157,99 +156,115 @@ class Day(object):
 
 class League(object):
     
-    def __init__(self, calendar, teams_obj, n_days):
+    def __init__(self, calendar, teams_names, n_days, SE=0):
         
         #la variabile calendar rappresenta il girone da ripetere sulle n_days giornate
         self.calendar = calendar
         self.days = []
-#        self.teams = {i:Team(i) for i in teams_names}
-        self.teams_obj = teams_obj
-        self.positions = {i: self.teams_obj[i].get_fin_pos() for i in self.teams_obj}
+        self.teams = {i:Team(i) for i in teams_names}
+        self.teams_names = teams_names
+        self.SE = SE
         
-        
-        n_teams = len(self.teams_obj)
+        n_teams = len(self.teams_names)
         day = 0
         
         for i in range(n_days):
             m = []
             day += 1
             day_schedule = self.calendar[i%(n_teams-1)]
-            
-            #print(day_schedule)
+
             for match in day_schedule: #crea una giornata
-                #print(match)
-                m.append(Match(self.teams_obj[match[0]],self.teams_obj[match[1]],day))
+                m.append(Match(self.teams[match[0]],self.teams[match[1]],day))
                 
             d = Day(m,day)
             
             self.days.append(d)
-        self.play(SE)   
+            
+        self.play()   
         
-    def play(self, SE):
+        self.rank_data = {i:[self.teams[i].get_league_points(),\
+                             sum(self.teams[i].get_abs_points()),\
+                             self.teams[i].get_goals_scored()] for i in\
+                             teams_names}
         
-        data = {}
+        self.final_rank = self.order_ranking()
+        
+    def play(self):
         
         for i in self.days:
-            i.play_day(SE)
+            i.play_day(self.SE)
             
-        d = self.get_teams_points()
-        for j in d:
-            data[j] = (d[j], sum(self.teams_obj[j].get_abs_points()), self.teams_obj[j].get_goals_scored())
-            data_ord = classifica(data)
-            
-        for i in data_ord:
-            fin_pos = data_ord.index(i)
-            self.positions[i[0]][fin_pos] += 1
-            
-#        return self.positions
-
-#    def get_fin_pos()
-    
     def get_teams(self):
         return self.teams_obj
     
     def get_teams_points(self):
         L = {}
-        for i in self.teams_obj:
-            L[i] = teams_obj[i].league_points
+        for i in self.teams:
+            L[i] = self.teams[i].league_points
         return L
         
-#    def get_teams_positions(self):
-        
-    
     def print_points(self):
         for i in self.teams_names:
             print(i + ':\t {} points'.format(self.teams[i].league_points))
-            #print(':\t {} points'.format(i.league_points))
-    
-    def classifica(self):
 
-        def getKey(item): return item[1]
-        
-        unsorted_ranking = [(i, self.teams[i].league_points) for i in self.teams_names]
-        self.ranking = sorted(unsorted_ranking, key=getKey, reverse=True)
-        
-        return self.ranking
+    def order_ranking(self):
+
+        ordered_ranking = sorted(sorted(sorted(self.rank_data.items(),\
+                                key = lambda x : x[1][2], reverse = True),\
+                                key = lambda x : x[1][1], reverse = True),\
+                                key = lambda x : x[1][0], reverse = True)
+
+        return ordered_ranking
+
     
     def print_ranking(self):
-        self.classifica()
+        self.ranking()
         for i in self.ranking:
             print(i[0] + ':\t {} points'.format(i[1]))
             #print(':\t {} points'.format(i.league_points))
             
-            
+    def print_league(self):
+        c = 0
+        for day in self.days:
+            c += 1
+            print('\n\n***************Giornata {}***************\n'.format(c))
+            for match in day.list_matches:
+                print(match.team1.name,'\t {} - {} \t'
+                      .format(match.team1.get_goals_per_day(c),
+                              match.team2.get_goals_per_day(c)),
+                              match.team2.name)
+        
 class Stats(object):
     
-    def __init__(self, list_leagues, SE):
+    def __init__(self, list_leagues):
         self.list_leagues = list_leagues
         self.average_points = []
         self.positions = {}
-        self.SE = SE
         self.teams_names = list_leagues[0].teams_names
-        #self.teams = list_leagues[0].teams
-        self.teams_obj = {i: Team(i) for i in teams_names}
+        self.teams_frankings = {i: [0 for _ in range(len(self.teams_names))]\
+                                    for i in teams_names}
+        self.gen_frankings()
         
         
+    def gen_frankings(self):
+        
+        for i in self.list_leagues:
+            for pos in range(len(self.teams_names)):
+                           
+                t_name = i.final_rank[pos][0]          
+                self.teams_frankings[t_name][pos] += 1
+    
+    def get_frankings_team(self,t_name):
+        return self.teams_frankings[t_name]
+
+    def plot_frankings(self):
+        for i in range(len(teams_names)):
+            plt.plot(range(1, len(teams_names)),
+                     self.get_frankings_team(teams_names[i]))
+            plt.xlabel('Piazzamenti')
+            plt.ylabel(teams_names[i])
+            plt.show()
+            
     def avrg_points(self):
         
         from collections import Counter
@@ -257,84 +272,44 @@ class Stats(object):
         L = Counter({i:0 for i in teams_names})
         
         for i in self.list_leagues:
-            i.play(self.SE)
             d = i.get_teams_points()
-            #print(d)
             d = Counter(d)
             L += d
         
         L2 = {k: round(L[k]/len(self.list_leagues),2) for k in L.keys()}
         
         L3 = sorted([(i,L2[i]) for i in L2],key = lambda j: j[1], reverse = True)
-        
-        for i in L3:
-            self.average_points.append(i)
-            
-        return self.average_points
-        
-    def get_positions(self):
-        
-        def classifica(dati):
-           
-            classifica_ordinata = sorted(sorted(sorted(dati.items(),\
-                                    key = lambda x : x[1][2], reverse = True),\
-                                    key = lambda x : x[1][1], reverse = True),\
-                                    key = lambda x : x[1][0], reverse = True)
-                                    
-            return classifica_ordinata
-        
-        positions = {i: [0 for i in range(len(self.teams_names))] for i in self.teams_names}
-        
-        for i in self.list_leagues:
-            data = {}
-            i.play(self.SE)
-            d = i.get_teams_points()
-            for j in d:
-                data[j] = (d[j], sum(self.teams[j].get_abs_points()), self.teams[j].get_goals_scored())
-                data_ord = classifica(data)
-            
-        return data_ord
-        
-#%% Statistics from leagues
 
+            
+        return L3
+        
+    def print_stats(L):
+        people = list(zip(*L))[0]
+        score = list(zip(*L))[1]
+        x_pos = np.arange(len(people))
+        
+        slope, intercept = np.polyfit(x_pos, score, 1)
+        trendline = intercept + (slope * x_pos)
+        
+        plt.plot(x_pos, trendline, color='red', linestyle='--')    
+        plt.bar(x_pos, score, align = 'center')
+        plt.xticks(x_pos, people, fontsize = 8)
+        plt.ylabel('Media punti')
+        plt.gcf().autofmt_xdate()
+        plt.show()
+    
+#%%
+    
 teams_names, players, abs_points = scraping('fantascandalo')
-
-
 
 n_days = len(abs_points[teams_names[0]])
 random_leagues = create_league_random(teams_names,1000)
 
-list_leagues = [League(random_leagues[i],teams_obj, n_days) for i in\
+list_leagues = [League(random_leagues[i],teams_names, n_days) for i in
                 range(len(random_leagues))]
                 
 #%%
-#stats1 = Stats(list_leagues, 0)
+stats1 = Stats(list_leagues)
 #stats2 = Stats(list_leagues, 2)
                 
 #list_leagues[0].play(0)
-                
-#%%
-
-def print_stats(L):
-    people = list(zip(*L))[0]
-    score = list(zip(*L))[1]
-    x_pos = np.arange(len(people))
-    
-    slope, intercept = np.polyfit(x_pos, score, 1)
-    trendline = intercept + (slope * x_pos)
-    
-    plt.plot(x_pos, trendline, color='red', linestyle='--')    
-    plt.bar(x_pos, score, align = 'center')
-    plt.xticks(x_pos, people, fontsize = 8)
-    plt.ylabel('Media punti')
-    plt.gcf().autofmt_xdate()
-    plt.show()
-    
-#==============================================================================
-# L = avrg_points(list_leagues, teams_names, 2)
-# print_stats(L)
-# print('\n')
-# for i in L:
-#     print(i)        
-#==============================================================================
-    

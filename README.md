@@ -14,7 +14,8 @@
 - [x] Scraping delle rose *(in progress...)*
 - [ ] Scraping di tutti i giocatori e dei voti per giornata - con database
 - [ ] Gestione dati di diverse fantaleghe (aggiornamenti giornata per giornata - database etc)
-
+- [ ] Scraping fantamilioni
+- [ ] Statistiche considerando le spese di ogni squadra per ogni reparto
 
 ### Implementazione classi
 
