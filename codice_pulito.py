@@ -22,6 +22,10 @@ class Team(object):
         self.goals_taken = 0
         self.vic_draw_losses = {}
         self.goals_per_day = {}
+        self.vittorie = 0
+        self.sconfitte = 0
+        self.pareggi = 0
+        self.diff_reti = self.goals_scored - self.goals_taken
         
         Team.num_teams += 1
         Team.teams_names.append(self.name)
@@ -47,15 +51,18 @@ class Team(object):
     def victory(self,day):
         self.vic_draw_losses[day] = 'V'
         self.league_points += 3
+        self.vittorie += 1
         #self.points_update(day)
         
     def loss(self,day):
         self.vic_draw_losses[day] = 'L'
+        self.sconfitte += 1
         #self.points_update(day)
         
     def draw(self,day):
         self.vic_draw_losses[day] = 'D'
         self.league_points += 1
+        self.pareggi += 1
         #self.points_update(day)
         
         
@@ -99,6 +106,10 @@ class Match(object):
         
         self.team1.set_goals_per_day(temp1, self.day)
         self.team2.set_goals_per_day(temp2, self.day)
+        
+        self.team1.diff_reti = self.team1.goals_scored - self.team1.goals_taken
+        self.team2.diff_reti = self.team2.goals_scored - self.team2.goals_taken
+        
         
         if temp1 > temp2:
             self.team1.victory(self.day)
@@ -147,11 +158,17 @@ class League(object):
             
             self.days.append(d)
             
-        self.play()   
+        self.play()
         
         self.rank_data = {i:[self.teams[i].league_points,\
-                             sum(self.teams[i].abs_points),\
-                             self.teams[i].goals_scored] for i in\
+                             len(self.days),\
+                             self.teams[i].vittorie,\
+                             self.teams[i].pareggi,\
+                             self.teams[i].sconfitte,\
+                             self.teams[i].goals_scored,\
+                             self.teams[i].goals_taken,\
+                             self.teams[i].diff_reti,\
+                             sum(self.teams[i].abs_points)] for i in\
                              teams_names}
         
         self.final_rank = self.order_ranking()
@@ -173,19 +190,24 @@ class League(object):
 
     def order_ranking(self):
 
-        ordered_ranking = sorted(sorted(sorted(self.rank_data.items(),\
-                                key = lambda x : x[1][2], reverse = True),\
-                                key = lambda x : x[1][1], reverse = True),\
+        ordered_ranking = sorted(sorted(sorted(sorted(self.rank_data.items(),\
+                                key = lambda x : x[1][6], reverse = True),\
+                                key = lambda x : x[1][5], reverse = True),\
+                                key = lambda x : x[1][8], reverse = True),\
                                 key = lambda x : x[1][0], reverse = True)
 
         return ordered_ranking
-
-    
-    def print_ranking(self):
-        self.ranking()
-        for i in self.ranking:
-            print(i[0] + ':\t {} points'.format(i[1]))
-            #print(':\t {} points'.format(i.league_points))
+            
+    def print_order_ranking(self):
+        data = []
+        names = []
+        first_row = ['Points', 'Matches', 'V', 'D', 'L', 'GS', 'GT', 'D', 'Abs Points']
+        for i in self.final_rank:
+            names.append(i[0])
+            data.append(i[1])
+        
+        table = pd.DataFrame(data, names, first_row)
+        return table
             
     def print_league(self):
         c = 0
@@ -264,15 +286,17 @@ class Stats(object):
 teams_names, players, abs_points, real_round = scraping('fantascandalo')
 
 n_days = len(abs_points[teams_names[0]])
-random_leagues = create_league_random(teams_names,1000)
-
-#SE_vals = [i for i in range(0, )]
-
-SE_vals = [0, 0.2, 0.4, 0.6, 0.8, 1, 1.2, 1.4, 1.6, 1.8, 2]
-
-
-L = [[League(random_leagues[i],teams_names, n_days, SE) for i in
-                range(len(random_leagues))] for SE in SE_vals]
+#==============================================================================
+# random_leagues = create_league_random(teams_names,1000)
+# 
+# #SE_vals = [i for i in range(0, )]
+# 
+# SE_vals = [0, 0.2, 0.4, 0.6, 0.8, 1, 1.2, 1.4, 1.6, 1.8, 2]
+# 
+# 
+# L = [[League(random_leagues[i],teams_names, n_days, SE) for i in
+#                 range(len(random_leagues))] for SE in SE_vals]
+#==============================================================================
 #%%
 #stats1 = Stats(list_leagues)
 #stats2 = Stats(list_leagues, 2)
@@ -281,26 +305,30 @@ L = [[League(random_leagues[i],teams_names, n_days, SE) for i in
                 
 #%%
                 
-lista_punti = {i: [] for i in teams_names}
-stats = [Stats(i) for i in L]
-for i in stats:    
-    punti_medi = i.avrg_points()
-    for z in punti_medi:
-        lista_punti[z[0]].append(z[1])
+#==============================================================================
+# lista_punti = {i: [] for i in teams_names}
+# stats = [Stats(i) for i in L]
+# for i in stats:    
+#     punti_medi = i.avrg_points()
+#     for z in punti_medi:
+#         lista_punti[z[0]].append(z[1])
+#==============================================================================
 
 #%%
 
-plt.plot(SE_vals, lista_punti['FC Pastaboy'], label = 'FC Pastaboy')
-plt.plot(SE_vals, lista_punti['FC BOMBAGALLO'], label = 'FC BOMBAGALLO')
-plt.plot(SE_vals, lista_punti['Ciolle United'], label = 'Ciolle United')
-plt.plot(SE_vals, lista_punti['Fc Stress'], label = 'Fc Stress')
-plt.plot(SE_vals, lista_punti['FC ROXY'], label = 'FC ROXY')
-plt.plot(SE_vals, lista_punti['Bucalina FC'], label = 'Bucalina FC')
-plt.plot(SE_vals, lista_punti['LA CORRAZZATA POTEMKIN'], label = 'LA CORRAZZATA POTEMKIN')
-plt.plot(SE_vals, lista_punti['AC PICCHIA'], label = 'AC PICCHIA')
-#plt.axis([-2.5, 22.5, 22, 31])
-plt.xlabel('Peso soglie elastiche')
-plt.ylabel('Media punti su 1000 campionati')
-plt.title('Media Punti vs Soglie Elastiche')
-plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-plt.show()
+#==============================================================================
+# plt.plot(SE_vals, lista_punti['FC Pastaboy'], label = 'FC Pastaboy')
+# plt.plot(SE_vals, lista_punti['FC BOMBAGALLO'], label = 'FC BOMBAGALLO')
+# plt.plot(SE_vals, lista_punti['Ciolle United'], label = 'Ciolle United')
+# plt.plot(SE_vals, lista_punti['Fc Stress'], label = 'Fc Stress')
+# plt.plot(SE_vals, lista_punti['FC ROXY'], label = 'FC ROXY')
+# plt.plot(SE_vals, lista_punti['Bucalina FC'], label = 'Bucalina FC')
+# plt.plot(SE_vals, lista_punti['LA CORRAZZATA POTEMKIN'], label = 'LA CORRAZZATA POTEMKIN')
+# plt.plot(SE_vals, lista_punti['AC PICCHIA'], label = 'AC PICCHIA')
+# #plt.axis([-2.5, 22.5, 22, 31])
+# plt.xlabel('Peso soglie elastiche')
+# plt.ylabel('Media punti su 1000 campionati')
+# plt.title('Media Punti vs Soglie Elastiche')
+# plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+# plt.show()
+#==============================================================================
