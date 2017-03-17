@@ -261,7 +261,7 @@ class Stats(object):
     
 #%%
     
-teams_names, players, abs_points = scraping('fantascandalo')
+teams_names, players, abs_points, real_round = scraping('fantascandalo')
 
 n_days = len(abs_points[teams_names[0]])
 random_leagues = create_league_random(teams_names,1000)

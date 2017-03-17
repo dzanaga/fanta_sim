@@ -7,8 +7,9 @@ import pandas as pd
 import matplotlib.pylab as plt
 import requests
 import random
-
 from bs4 import BeautifulSoup as bs
+
+#%%
 
 def check_unique_team(L):
     #flatten L and convert to string
@@ -152,7 +153,7 @@ def classifica(dati):
 
 
     return classifica_ordinata
-#%% Scraping teams' names, players and absolute points
+#%% Scraping teams' names, players, absolute points and real calendar
 
 def scraping(league_name):
     
@@ -185,6 +186,8 @@ def scraping(league_name):
     tr = soup.find_all('tr')
     
     abs_points = {i:[] for i in teams}
+    real_day = []
+    real_round = []
     
     for i in tr:
         if len(i) == 2:
@@ -192,7 +195,18 @@ def scraping(league_name):
             abs_points[res[0]].append(res[2])
             abs_points[res[1]].append(res[3])
             
-    return teams, players, abs_points
+            matches_per_round = (len(teams) - 1) * (len(teams) // 2)
+            temp = list(list(i.children)[0])
+            if len(real_day) < matches_per_round:
+                real_day.append((temp[0].string, temp[6].string))
+        
+    for i in range(len(teams) - 1):
+        temp_round = real_day[0:len(teams)//2]
+        real_round.append(temp_round)
+        real_day = real_day[len(teams)//2:]
+                
+            
+    return teams, players, abs_points, real_round
     
 def play_league(team1, team2, day, SE):
     
