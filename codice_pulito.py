@@ -266,7 +266,10 @@ teams_names, players, abs_points = scraping('fantascandalo')
 n_days = len(abs_points[teams_names[0]])
 random_leagues = create_league_random(teams_names,1000)
 
-SE_vals = [i for i in range(20)]
+#SE_vals = [i for i in range(0, )]
+
+SE_vals = [0, 0.2, 0.4, 0.6, 0.8, 1, 1.2, 1.4, 1.6, 1.8, 2]
+
 
 L = [[League(random_leagues[i],teams_names, n_days, SE) for i in
                 range(len(random_leagues))] for SE in SE_vals]
@@ -284,11 +287,20 @@ for i in stats:
     punti_medi = i.avrg_points()
     for z in punti_medi:
         lista_punti[z[0]].append(z[1])
-        
-a = []
-b = []
 
-for i in lista_punti:
-    a.append(plt.plot(SE_vals, lista_punti[i]))
-    b.append(i)    
-plt.legend(a, b)
+#%%
+
+plt.plot(SE_vals, lista_punti['FC Pastaboy'], label = 'FC Pastaboy')
+plt.plot(SE_vals, lista_punti['FC BOMBAGALLO'], label = 'FC BOMBAGALLO')
+plt.plot(SE_vals, lista_punti['Ciolle United'], label = 'Ciolle United')
+plt.plot(SE_vals, lista_punti['Fc Stress'], label = 'Fc Stress')
+plt.plot(SE_vals, lista_punti['FC ROXY'], label = 'FC ROXY')
+plt.plot(SE_vals, lista_punti['Bucalina FC'], label = 'Bucalina FC')
+plt.plot(SE_vals, lista_punti['LA CORRAZZATA POTEMKIN'], label = 'LA CORRAZZATA POTEMKIN')
+plt.plot(SE_vals, lista_punti['AC PICCHIA'], label = 'AC PICCHIA')
+#plt.axis([-2.5, 22.5, 22, 31])
+plt.xlabel('Peso soglie elastiche')
+plt.ylabel('Media punti su 1000 campionati')
+plt.title('Media Punti vs Soglie Elastiche')
+plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+plt.show()
