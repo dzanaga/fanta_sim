@@ -5,6 +5,7 @@ import itertools
 import os, random
 import pandas as pd
 import matplotlib.pylab as plt
+from matplotlib import cm
 import requests
 from bs4 import BeautifulSoup as bs
 from fanta_calendario import *
@@ -258,11 +259,13 @@ class Stats(object):
 
     def plot_frankings(self):
         for i in range(len(teams_names)):
-            plt.plot(range(1, len(teams_names)),
-                     self.get_frankings_team(teams_names[i]))
+            plt.plot(range(1, len(teams_names) + 1),
+                     self.teams_frankings[teams_names[i]], label=teams_names[i]
+                     , linewidth=4)
             plt.xlabel('Piazzamenti')
             plt.ylabel(teams_names[i])
-            plt.show()
+        plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+        plt.show()
             
     def avrg_points(self):
         
@@ -302,15 +305,17 @@ class Stats(object):
 teams_names, players, abs_points, real_round = scraping('fantascandalo')
 
 n_days = len(abs_points[teams_names[0]])
-#random_leagues = create_league_random(teams_names,10000)
+random_leagues = create_league_random(teams_names,100)
 
-#%%
+list_leagues1 = [League(i, teams_names, n_days, 0) for i in random_leagues]
 
-#list_leagues = [League(i, teams_names, n_days, 0) for i in random_leagues]
+list_leagues2 = [League(i, teams_names, n_days, 2) for i in random_leagues]
 
-our_league = League(real_round, teams_names, n_days, 0)
+#our_league = League(real_round, teams_names, n_days, 0)
 
-#stats = Stats(list_leagues)
+stats1 = Stats(list_leagues1)
+
+stats2 = Stats(list_leagues2)
 
 #==============================================================================
 # #SE_vals = [i for i in range(0, )]
@@ -390,15 +395,17 @@ def plot_league(our_league, team):
     return team_points
     
 #%%
-aaa = {}
-for i in teams_names:
-    temp = plot_league(our_league, i)
-    aaa[i] = temp
-    plt.plot(aaa[i], label = i)
-    plt.xlabel('Giornate')
-    plt.ylabel('Diff punti con ultimo posto')
-plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-plt.show()
+#==============================================================================
+# aaa = {}
+# for i in teams_names:
+#     temp = plot_league(our_league, i)
+#     aaa[i] = temp
+#     plt.plot(aaa[i], label = i)
+#     plt.xlabel('Giornate')
+#     plt.ylabel('Diff punti con ultimo posto')
+# plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+# plt.show()
+#==============================================================================
     
 
 
