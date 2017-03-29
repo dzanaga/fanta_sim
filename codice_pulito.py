@@ -5,6 +5,7 @@ import itertools
 import os, random
 import pandas as pd
 import matplotlib.pylab as plt
+from matplotlib import cm
 import requests
 from bs4 import BeautifulSoup as bs
 from fanta_calendario import *
@@ -142,6 +143,7 @@ class League(object):
         self.teams = {i:Team(i) for i in teams_names}
         self.teams_names = teams_names
         self.SE = SE
+        self.classifica_provv = {i:[] for i in teams_names}
         
         n_teams = len(self.teams_names)
         day = 0
@@ -160,7 +162,26 @@ class League(object):
             
         self.play()
         
-        self.rank_data = {i:[self.teams[i].league_points,\
+#==============================================================================
+#         self.rank_data = {i:[self.teams[i].league_points,\
+#                              len(self.days),\
+#                              self.teams[i].vittorie,\
+#                              self.teams[i].pareggi,\
+#                              self.teams[i].sconfitte,\
+#                              self.teams[i].goals_scored,\
+#                              self.teams[i].goals_taken,\
+#                              self.teams[i].diff_reti,\
+#                              sum(self.teams[i].abs_points[0:n_days])] for i in\
+#                              teams_names}
+#==============================================================================
+        
+#        self.final_rank = self.order_ranking()
+        
+    def play(self):
+        
+        for i in self.days:
+            i.play_day(self.SE)
+            self.rank_data = {i:[self.teams[i].league_points,\
                              len(self.days),\
                              self.teams[i].vittorie,\
                              self.teams[i].pareggi,\
@@ -168,15 +189,11 @@ class League(object):
                              self.teams[i].goals_scored,\
                              self.teams[i].goals_taken,\
                              self.teams[i].diff_reti,\
-                             sum(self.teams[i].abs_points)] for i in\
+                             sum(self.teams[i].abs_points[0:n_days])] for i in\
                              teams_names}
-        
-        self.final_rank = self.order_ranking()
-        
-    def play(self):
-        
-        for i in self.days:
-            i.play_day(self.SE)
+            self.final_rank = self.order_ranking()
+            for j in self.final_rank:
+                self.classifica_provv[j[0]].append(j[1][0])
     
     def get_teams_points(self):
         L = {}
@@ -242,11 +259,13 @@ class Stats(object):
 
     def plot_frankings(self):
         for i in range(len(teams_names)):
-            plt.plot(range(1, len(teams_names)),
-                     self.get_frankings_team(teams_names[i]))
+            plt.plot(range(1, len(teams_names) + 1),
+                     self.teams_frankings[teams_names[i]], label=teams_names[i]
+                     , linewidth=4)
             plt.xlabel('Piazzamenti')
             plt.ylabel(teams_names[i])
-            plt.show()
+        plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+        plt.show()
             
     def avrg_points(self):
         
@@ -286,9 +305,19 @@ class Stats(object):
 teams_names, players, abs_points, real_round = scraping('fantascandalo')
 
 n_days = len(abs_points[teams_names[0]])
+random_leagues = create_league_random(teams_names,100)
+
+list_leagues1 = [League(i, teams_names, n_days, 0) for i in random_leagues]
+
+list_leagues2 = [League(i, teams_names, n_days, 2) for i in random_leagues]
+
+#our_league = League(real_round, teams_names, n_days, 0)
+
+stats1 = Stats(list_leagues1)
+
+stats2 = Stats(list_leagues2)
+
 #==============================================================================
-# random_leagues = create_league_random(teams_names,1000)
-# 
 # #SE_vals = [i for i in range(0, )]
 # 
 # SE_vals = [0, 0.2, 0.4, 0.6, 0.8, 1, 1.2, 1.4, 1.6, 1.8, 2]
@@ -332,3 +361,61 @@ n_days = len(abs_points[teams_names[0]])
 # plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 # plt.show()
 #==============================================================================
+
+#%%
+#==============================================================================
+# counts = 0
+# for i in list_leagues:
+#     if i.final_rank[0][0] == 'FC Pastaboy' and i.final_rank[1][0] == 'Bucalina FC'\
+#     and i.final_rank[2][0] == 'Fc Stress' and i.final_rank[3][0] == 'LA CORRAZZATA POTEMKIN'\
+#     and i.final_rank[4][0] == 'Ciolle United' and i.final_rank[5][0] == 'FC BOMBAGALLO'\
+#     and i.final_rank[6][0] == 'FC ROXY' and i.final_rank[7][0] == 'AC PICCHIA':
+#         counts += 1
+# #print(str((counts*100)/len(list_leagues)) + ' %')
+# 
+# print(counts)
+#==============================================================================
+        
+        
+#%%
+        
+def plot_league(our_league, team):
+    team_points = []
+    for i in range(len(our_league.classifica_provv[team])):
+        val = 100
+        for j in our_league.classifica_provv:
+            if our_league.classifica_provv[j][i] < val:
+                val = our_league.classifica_provv[j][i]
+        team_points.append(our_league.classifica_provv[team][i] - val)
+        
+#==============================================================================
+#     plt.plot(team_points)
+#     plt.show()
+#==============================================================================
+    return team_points
+    
+#%%
+#==============================================================================
+# aaa = {}
+# for i in teams_names:
+#     temp = plot_league(our_league, i)
+#     aaa[i] = temp
+#     plt.plot(aaa[i], label = i)
+#     plt.xlabel('Giornate')
+#     plt.ylabel('Diff punti con ultimo posto')
+# plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+# plt.show()
+#==============================================================================
+    
+
+
+
+
+
+
+
+
+
+
+
+
