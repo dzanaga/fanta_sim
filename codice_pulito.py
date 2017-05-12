@@ -1,5 +1,7 @@
 import time
 import string
+import copy
+import sys
 import numpy as np
 import itertools
 import os, random
@@ -10,6 +12,7 @@ import requests
 from bs4 import BeautifulSoup as bs
 from fanta_calendario import *
 
+sys.setrecursionlimit(10000)
 
 class Team(object):
     num_teams = 0
@@ -79,8 +82,8 @@ class Match(object):
         points1 = self.team1.abs_points
         points2 = self.team2.abs_points
 
-        sum1 = sum(points1[-5:])
-        sum2 = sum(points2[-5:])
+        sum1 = sum(points1[-7:])
+        sum2 = sum(points2[-7:])
         
         if self.day < len(teams_names) or sum1 == sum2:
             temp1 = int(((points1[self.day - 1] - 66) // 6) + 1)
@@ -305,33 +308,18 @@ class Stats(object):
 teams_names, players, abs_points, real_round = scraping('fantascandalo')
 
 n_days = len(abs_points[teams_names[0]])
-random_leagues = create_league_random(teams_names,100)
+#random_leagues = create_league_random(teams_names,1000)
 
-list_leagues1 = [League(i, teams_names, n_days, 0) for i in random_leagues]
+#list_leagues1 = [League(i, teams_names, n_days, 2) for i in random_leagues]
 
-list_leagues2 = [League(i, teams_names, n_days, 2) for i in random_leagues]
+#list_leagues2 = [League(i, teams_names, n_days, 2) for i in random_leagues]
 
-#our_league = League(real_round, teams_names, n_days, 0)
+our_league = League(real_round, teams_names, n_days, 0)
 
-stats1 = Stats(list_leagues1)
+#stats = Stats(list_leagues1)
 
-stats2 = Stats(list_leagues2)
+#stats2 = Stats(list_leagues2)
 
-#==============================================================================
-# #SE_vals = [i for i in range(0, )]
-# 
-# SE_vals = [0, 0.2, 0.4, 0.6, 0.8, 1, 1.2, 1.4, 1.6, 1.8, 2]
-# 
-# 
-# L = [[League(random_leagues[i],teams_names, n_days, SE) for i in
-#                 range(len(random_leagues))] for SE in SE_vals]
-#==============================================================================
-#%%
-#stats1 = Stats(list_leagues)
-#stats2 = Stats(list_leagues, 2)
-                
-#list_leagues[0].play(0)
-                
 #%%
                 
 #==============================================================================
@@ -406,13 +394,56 @@ def plot_league(our_league, team):
 # plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 # plt.show()
 #==============================================================================
+
+#%% Gol Mertens
+
+mertens = [[9, 1], [15, 3], [16, 4], [17, 1], [19, 1], [21, 1],\
+            [22, 3], [26, 2], [27, 1], [28, 1], [31, 1]]
+
+goals_m = 19
+
+def no_mertens(hyp_goals, mertens):
+    counts = 0
+    mertens2 = copy.deepcopy(mertens)
+    abs_points = {z:0 for z in teams_names}
+    for x in abs_points:
+        temp = abs_points2[x]
+        abs_points[x] = temp
+    while counts < (goals_m - hyp_goals):
+        temp = random.choice(mertens2)
+        if temp[1] != 0:
+            abs_points['FC Pastaboy'][temp[0] - 1] -= 3.0
+            counts += 1
+            temp[1] -= 1
+    
+    new_league = League(real_round, teams_names, n_days, 0)
+    
+    return new_league.order_ranking()
+
+
+
+def sim_no_mert(hyp_goals, trials):
+    new_dict = {i:0 for i in teams_names}
+    for i in range(trials):
+        abs_points = {z:0 for z in teams_names}
+        for x in abs_points:
+            temp = abs_points2[x]
+            abs_points[x] = temp
+        res = no_mertens(hyp_goals, mertens)
+        for y in res:
+            new_dict[y[0]] += y[1][0]
+            
+    for i in new_dict:
+        new_dict[i] /= trials
+        
+    return sorted(new_dict.items(), key = lambda x: x[1], reverse = True)
     
 
 
-
-
-
-
+abs_points2 = {z:0 for z in teams_names}
+for x in abs_points:
+    temp = abs_points[x]
+    abs_points2[x] = temp
 
 
 
